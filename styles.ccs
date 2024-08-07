@@ -1,0 +1,323 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #147B58;
+  overflow: hidden;
+  font-family: 'Inter','Josefin Sans',sans-serif;
+}
+
+/*NODE CANVAS*/
+canvas {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #147B58;
+  overflow: hidden;
+}
+
+/*Erik Slote*/
+.hero {
+  z-index: 1;
+  padding: 1em;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  color: white;
+}
+.hero a {
+  color: grey;
+  text-decoration: none;
+}
+.hero a:hover {
+  transition: 0.5s;
+  color: white;
+}
+
+/*CONTACT*/
+.contact {
+  z-index: 1;
+  padding: 0;
+  position: absolute;
+  bottom: 1em;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%);
+  transform-origin: 50% 50%;
+  color: white;
+  cursor: pointer;
+  transition: 0.5s;
+}
+.contact.active {
+  bottom: 0em;
+}
+.contact a {
+  color: inherit;
+  transition: 1.5s;
+}
+.contact a:hover {
+  transition: 1.5s;
+  color: red;
+}
+
+/*SOCIALS*/ 
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.socialmedia {
+  position: absolute;
+  bottom: 1.5em;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  opacity: 0;
+  transition: 0.8s;
+}
+.socialmedia.active {
+  bottom: 2.5em;
+  opacity: 1;
+}
+li {
+  list-style: none;
+  display: inline-block;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 25px;
+  color: white;
+  transition: 1s;
+}
+li:hover {
+  color: red;
+  transition: 1s;
+}
+
+/*BUTTONS*/
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 auto;
+  margin-top: -0.5em;
+  min-height: 100vh;
+  background: blue;
+}
+.btn {
+  flex: 1 1 auto;
+  margin: 10px;
+  padding: 8px 40px;
+  text-align: center;
+  font-size: 1em;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: black;
+ /* text-shadow: 0px 0px 10px rgba(0,0,0,0.2);*/
+  /* box-shadow: 0 0 10px #eee;  */
+  border-radius: 25px;
+ }
+
+
+.btn:hover {
+  background-position: right center; /* change the direction of the change here */
+}
+
+.btn-1 {
+  background-image: linear-gradient(to right, white 0%, silver 51%, white 100%);
+}
+
+
+.btn-2 {
+  outline: #eee;
+  background: transparent;
+  color: white;
+  box-shadow: 0 0 0 #eee; 
+  border: 1px solid white;
+}
+
+.btn-2:hover {
+  background-color: #eee;
+  color: black;
+  transition: 1s;
+}
+
+
+
+
+
+
+
+/*FOOTER*/
+.footer {
+  z-index: 1;
+  position: absolute;
+  bottom: 5em;
+  left: 0;
+  right: 0; /* Ensures the footer extends full width */
+  display: flex; /* Using flexbox */
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  cursor: pointer;
+}
+
+.footer a {
+  color: white;
+  text-decoration: none;
+}
+.footer a:hover {
+  /* transition: 0.5s;
+  color: white; */
+  color: grey;
+  text-shadow: 0 0 15px grey;
+  transition: all 0.5s ease;
+}
+
+
+
+/*DESKTOP SITE*/
+@media only screen and (min-width: 800px) {
+  .socialIcons {
+    bottom: 5px;
+  }
+  /* .socialIcons2 {
+    bottom: 5px;
+  } */
+}
+
+/* SOCIAL ICONS */
+.socialIcons {
+  position: absolute;
+  bottom: 2em;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  opacity: 1;
+  transition: 0.8s;
+}
+
+.socialIcons2 {
+  /* position: absolute;
+  bottom: 2em;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  opacity: 1;
+  transition: 0.8s; */
+  position: absolute;
+  top: 40% + 4em;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/* UPDATED SOCIAL ICONS */
+.wrapper {
+  position: absolute;
+  bottom: 2em;
+  /* top: 50%; */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 252px;
+  margin-top: 8em;
+}
+
+.wrapper ul {
+  list-style: none;
+}
+
+.wrapper ul li {
+  width: 35px;
+  height: 35px;
+  line-height: 35px;
+  margin: 0 10px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 5px solid #D8E2DC;
+  float: left;
+  transition: all 0.5s ease;
+}
+
+
+.wrapper ul li .fa {
+  color: white;
+  margin-top: 5px;
+  transition: all 0.5s ease;
+}
+.wrapper ul li {
+  border: 0px solid white;
+}
+  /*linkedin*/
+.wrapper ul li:hover .fa-linkedin {
+  color: gray;
+  text-shadow: 0 0 15px gray;
+  transition: all 0.5s ease;
+}
+
+/*twitter*/
+.wrapper ul li:hover .fa-twitter {
+  color: gray;
+  text-shadow: 0 0 15px gray;
+  transition: all 0.5s ease;
+}
+
+/* github */
+.wrapper ul li:hover .fa-github {
+  color: gray;
+  text-shadow: 0 0 15px gray;
+  transition: all 0.5s ease;
+}
+
+/* envelope */
+.wrapper ul li:hover .fa-envelope {
+  color: gray;
+  text-shadow: 0 0 15px gray;
+  transition: all 0.5s ease;
+}
+
+
+
+
+
+
+
+/* FONTS */
+h1 {
+  font-size: 2.2em;
+  font-weight: 550;
+  letter-spacing: 0px;
+  line-height: 1em;
+  text-align: center;
+}
+h2 {
+  font-size: 1.2em;
+  font-weight: 400;
+  line-height: 1em;
+  letter-spacing: 0px;
+  text-align: center;
+  color: white;
+}
+h3 {
+  font-size: 1em;
+  font-weight: 400;
+  letter-spacing: 0px;
+  line-height: 1em;
+  text-align: center;
+  color: white;
+}
+.footer h3 {
+  color: white;
+}
+
+h4 {
+  font-size: 0.5em;
+  font-weight: 300;
+  letter-spacing: 0px;
+  line-height: 1em;
+  text-align: center;
+}
