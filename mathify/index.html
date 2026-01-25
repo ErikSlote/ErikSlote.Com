@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathify</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    #lava-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding-top: 40px;
+    }
+    .header h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: 4rem;
+      font-weight: 700;
+      font-style: italic;
+      margin-bottom: 15px;
+      letter-spacing: -2px;
+      color: #fff;
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+    }
+    .header p {
+      font-size: 1.2rem;
+      font-weight: 300;
+      font-style: italic;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(255, 255, 255, 0.85) 40%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.85) 60%,
+        rgba(255, 255, 255, 0.85) 100%
+      );
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glint 4s ease-in-out infinite;
+    }
+    .section { margin-bottom: 40px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .section-number {
+      display: none;
+    }
+    .section-title { font-size: 1.5rem; font-weight: 600; color: #fff; font-style: italic; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); }
+    .option-grid {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .option-card {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 20px 30px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      width: 150px;
+    }
+    .option-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .option-card.selected {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #fff;
+      transform: translateY(-5px) scale(1.02);
+    }
+    .option-label {
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 5px;
+      color: #fff;
+    }
+    .option-desc {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+    }
+    .btn {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      padding: 18px 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      margin: 10px;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #fff;
+    }
+    .btn-trick {
+      border-color: rgba(255, 149, 0, 0.5);
+      color: #ff9500;
+    }
+    .btn-trick:hover {
+      border-color: #ff9500;
+      background: rgba(255, 149, 0, 0.1);
+    }
+    .btn-answer {
+      border-color: rgba(0, 255, 100, 0.5);
+      color: #0f0;
+    }
+    .btn-answer:hover {
+      border-color: #0f0;
+      background: rgba(0, 255, 100, 0.1);
+    }
+    .test-header {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 20px;
+      text-align: center;
+      min-width: 80px;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      opacity: 0.5;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 700; }
+    .question-container {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      padding: 60px 40px;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .training-hints {
+      width: 100%;
+      max-width: 650px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 149, 0, 0.3);
+      border-radius: 15px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .training-hints-header {
+      padding: 15px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s ease;
+    }
+    .training-hints-header:hover {
+      background: rgba(255, 149, 0, 0.1);
+    }
+    .training-hints h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ff9500;
+      margin: 0;
+    }
+    .training-hints-toggle {
+      color: #ff9500;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    .training-hints.open .training-hints-toggle {
+      transform: rotate(180deg);
+    }
+    .training-hints-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+    .training-hints.open .training-hints-content {
+      max-height: 500px;
+      padding: 0 20px 20px;
+    }
+    .hint-content {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.85);
+    }
+    .hint-content .hl {
+      color: #ff9500;
+      font-weight: 600;
+    }
+    .hint-content .step {
+      display: block;
+      margin: 8px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .hint-content .step::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #ff9500;
+    }
+    .hint-content .try-it {
+      display: block;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,149,0,0.2);
+      font-style: italic;
+      opacity: 0.7;
+    }
+    .question-text {
+      font-size: 3rem;
+      font-weight: 300;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .answer-input {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 20px 35px;
+      font-size: 2rem;
+      color: #fff;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+    }
+    .answer-input:focus {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .input-hint {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      opacity: 0.3;
+      font-style: italic;
+    }
+    .feedback {
+      margin-top: 25px;
+      padding: 15px 30px;
+      border-radius: 15px;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+    .feedback.correct {
+      background: transparent;
+      border: 1px solid rgba(0, 255, 100, 0.5);
+      color: #0f0;
+    }
+    .feedback.incorrect {
+      background: transparent;
+      border: 1px solid rgba(255, 50, 50, 0.5);
+      color: #ff5555;
+    }
+    .button-row {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hidden { display: none; }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 25px;
+      margin: 40px 0;
+    }
+    .result-card {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .result-value {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .result-label {
+      font-size: 0.95rem;
+      opacity: 0.5;
+      text-transform: uppercase;
+    }
+    .results-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .results-subtitle {
+      text-align: center;
+      opacity: 0.5;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+    .start-btn-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+    /* Breakdown Modal */
+    .breakdown-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .breakdown-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .breakdown-modal {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      padding: 50px;
+      max-width: 750px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .breakdown-modal.trick-modal {
+      border-color: rgba(255, 149, 0, 0.3);
+    }
+    .breakdown-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #ff9500;
+    }
+    .breakdown-title.answer-title {
+      color: #0f0;
+    }
+    .breakdown-subtitle {
+      font-size: 1rem;
+      opacity: 0.5;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .breakdown-original {
+      font-size: 2.5rem;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+    }
+    .breakdown-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .breakdown-step {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      border-left: 4px solid #ff6b00;
+      opacity: 0;
+      transform: translateX(-20px);
+      animation: stepIn 0.4s ease forwards;
+    }
+    .breakdown-step:nth-child(1) { animation-delay: 0.1s; }
+    .breakdown-step:nth-child(2) { animation-delay: 0.25s; }
+    .breakdown-step:nth-child(3) { animation-delay: 0.4s; }
+    .breakdown-step:nth-child(4) { animation-delay: 0.55s; }
+    .breakdown-step:nth-child(5) { animation-delay: 0.7s; }
+    .breakdown-step:nth-child(6) { animation-delay: 0.85s; }
+    @keyframes stepIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .step-number {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid #ff9500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #ff9500;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-description {
+      font-size: 0.9rem;
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+    .step-math {
+      font-size: 1.3rem;
+      font-family: 'Courier New', monospace;
+      font-weight: 500;
+    }
+    .step-math .highlight { color: #ff9500; }
+    .step-math .result { color: #0f0; }
+    .breakdown-final {
+      margin-top: 30px;
+      padding: 25px;
+      background: transparent;
+      border: 1px solid rgba(0, 255, 100, 0.3);
+      border-radius: 15px;
+      text-align: center;
+      opacity: 0;
+      animation: stepIn 0.4s ease forwards;
+      animation-delay: 1s;
+    }
+    .breakdown-final-label {
+      font-size: 0.9rem;
+      opacity: 0.6;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .breakdown-final-value {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+    }
+    .breakdown-close {
+      display: block;
+      margin: 30px auto 0;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 15px 40px;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .breakdown-close:hover {
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .method-tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .method-tab {
+      padding: 10px 20px;
+      border-radius: 25px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    .method-tab:hover { border-color: rgba(255, 255, 255, 0.5); }
+    .method-tab.active {
+      border-color: #ff9500;
+      color: #ff9500;
+    }
+    .footer-credit {
+      position: fixed;
+      bottom: 15px;
+      right: 20px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    .footer-credit span {
+      font-family: 'Great Vibes', cursive;
+      font-size: 1.3rem;
+    }
+    .footer-credit a {
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .footer-credit a:hover {
+      color: #ff9500;
+    }
+    .footer-credit svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+    .footer-quote {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      z-index: 5;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.6) 40%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.6) 60%,
+        rgba(255, 255, 255, 0.6) 100%
+      );
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glint 4s ease-in-out infinite;
+    }
+    @keyframes glint {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+    .voice-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      padding: 10px 20px;
+      color: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .voice-toggle:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .voice-toggle.active {
+      border-color: #ff9500;
+      color: #ff9500;
+    }
+    .voice-toggle svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .voice-panel {
+      position: fixed;
+      top: 70px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 149, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      width: 280px;
+      z-index: 10;
+      display: none;
+    }
+    .voice-panel.visible {
+      display: block;
+    }
+    .voice-panel h4 {
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      color: #ff9500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .voice-panel h4 svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .voice-mode-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .voice-mode-option:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .voice-mode-option.selected {
+      border-color: #ff9500;
+      background: rgba(255, 149, 0, 0.1);
+    }
+    .voice-mode-option input {
+      display: none;
+    }
+    .voice-mode-radio {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .voice-mode-option.selected .voice-mode-radio {
+      border-color: #ff9500;
+    }
+    .voice-mode-option.selected .voice-mode-radio::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #ff9500;
+      border-radius: 50%;
+    }
+    .voice-mode-label {
+      flex: 1;
+    }
+    .voice-mode-label strong {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 2px;
+    }
+    .voice-mode-label span {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+    .voice-status {
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .voice-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+    }
+    .voice-status-dot.listening {
+      background: #0f0;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .voice-transcript {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      max-height: 120px;
+      overflow-y: auto;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .voice-transcript .number {
+      color: #ff9500;
+      font-weight: 600;
+    }
+    .voice-transcript .operator {
+      color: #0f0;
+    }
+    .voice-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .voice-btn:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .voice-btn.recording {
+      border-color: #ff3333;
+      color: #ff3333;
+      animation: pulse 1s infinite;
+    }
+    .history-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      padding: 10px 20px;
+      color: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+    .history-btn:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .history-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .history-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .history-modal {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .history-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .history-table th,
+    .history-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .history-table th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .history-table td {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .history-correct {
+      color: #0f0;
+    }
+    .history-incorrect {
+      color: #ff5555;
+    }
+    .history-empty {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.5;
+    }
+    .history-close {
+      display: block;
+      margin: 20px auto 0;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 10px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .history-close:hover {
+      border-color: #fff;
+    }
+    .nav-arrows {
+      display: none;
+    }
+    .nav-arrow {
+      display: none;
+    }
+    .operation-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .op-pill {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+    .op-pill:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    .op-symbol {
+      font-size: 1.3rem;
+      font-weight: 300;
+      opacity: 0.8;
+    }
+    .op-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .examples-display {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .examples-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-right: 10px;
+    }
+    .examples-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .solve-layout {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+      align-items: flex-start;
+    }
+    .solve-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .notes-section {
+      width: 250px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .notes-section h4 {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .notes-textarea {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      resize: none;
+      height: 80px;
+      outline: none;
+    }
+    .notes-textarea:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .notes-canvas {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      cursor: crosshair;
+    }
+    .notes-clear {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.6);
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+    .notes-clear:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+    .question-container.compact {
+      padding: 30px 20px;
+      min-height: auto;
+    }
+    .question-text.compact {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+    }
+    .answer-input.compact {
+      padding: 15px 25px;
+      font-size: 1.5rem;
+      max-width: 300px;
+    }
+    .input-hint.compact {
+      font-size: 0.75rem;
+      margin-top: 10px;
+    }
+    .button-row-inline {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-inline {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-inline:hover {
+      transform: translateY(-2px);
+      border-color: #fff;
+    }
+    .btn-inline.btn-primary {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #fff;
+    }
+    .btn-inline.btn-trick {
+      border-color: rgba(255, 149, 0, 0.5);
+      color: #ff9500;
+    }
+    .btn-inline.btn-trick:hover {
+      border-color: #ff9500;
+    }
+    .btn-inline.btn-answer {
+      border-color: rgba(0, 255, 100, 0.5);
+      color: #0f0;
+    }
+    .btn-inline.btn-answer:hover {
+      border-color: #0f0;
+    }
+    .notes-section.tall {
+      width: 250px;
+      min-height: 350px;
+      display: flex;
+      flex-direction: column;
+    }
+    .notes-textarea.tall {
+      height: 100px;
+      flex-shrink: 0;
+    }
+    .notes-canvas.tall {
+      flex: 1;
+      min-height: 180px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="lava-canvas"></canvas>
+  <button class="history-btn" onclick="showHistory()">History</button>
+  
+  <!-- Voice Mode Toggle -->
+  <button class="voice-toggle" id="voice-toggle" onclick="toggleVoiceMode()">
+    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    Voice Mode
+  </button>
+  
+  <!-- Voice Control Panel -->
+  <div class="voice-panel" id="voice-panel">
+    <h4>
+      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+      Voice Controls
+    </h4>
+    
+    <div class="voice-mode-option selected" onclick="selectVoiceMode('brainstorm')">
+      <div class="voice-mode-radio"></div>
+      <div class="voice-mode-label">
+        <strong>Brainstorm</strong>
+        <span>Captures numbers & calculations as you think aloud</span>
+      </div>
+    </div>
+    
+    <div class="voice-mode-option" onclick="selectVoiceMode('answer')">
+      <div class="voice-mode-radio"></div>
+      <div class="voice-mode-label">
+        <strong>Answer Only</strong>
+        <span>Say your final answer to submit</span>
+      </div>
+    </div>
+    
+    <div class="voice-status">
+      <div class="voice-status-dot" id="voice-status-dot"></div>
+      <span id="voice-status-text">Not listening</span>
+    </div>
+    
+    <div class="voice-transcript" id="voice-transcript">
+      <em style="opacity: 0.5">Your spoken calculations will appear here...</em>
+    </div>
+    
+    <button class="voice-btn" id="voice-listen-btn" onclick="toggleListening()">
+      Start Listening
+    </button>
+    
+    <button class="voice-btn" onclick="clearTranscript()">
+      Clear Transcript
+    </button>
+  </div>
+  
+  <div class="history-overlay" id="history-overlay" onclick="closeHistory(event)">
+    <div class="history-modal" onclick="event.stopPropagation()">
+      <div class="history-title">Question History</div>
+      <div id="history-content"></div>
+      <button class="history-close" onclick="closeHistory()">Close</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="header">
+      <h1 id="main-title">Mathify</h1>
+      <p>master mental math to counteract brainrot.</p>
+    </div>
+    <div id="mode-screen">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <div class="section-title">Choose Mode</div>
+        </div>
+        <div class="option-grid">
+          <div class="option-card" onclick="selectMode('practice')">
+            <div class="option-label">Practice</div>
+            <div class="option-desc">Timed test</div>
+          </div>
+          <div class="option-card" onclick="selectMode('training')">
+            <div class="option-label">Training</div>
+            <div class="option-desc">Learn with hints & tricks</div>
+          </div>
+          <div class="option-card" onclick="selectMode('consultant')">
+            <div class="option-label">Consultant</div>
+            <div class="option-desc">Close enough (±15%)</div>
+          </div>
+        </div>
+        <div class="nav-arrows">
+          <div class="nav-arrow disabled">←</div>
+          <div class="nav-arrow disabled">→</div>
+        </div>
+      </div>
+    </div>
+    <div id="accuracy-screen" class="hidden">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <div class="section-title">Choose Accuracy Level</div>
+        </div>
+        <div class="option-grid">
+          <div class="option-card" onclick="selectAccuracy('precise')">
+            <div class="option-label">Precise Math</div>
+            <div class="option-desc">Exact answer required</div>
+          </div>
+          <!--<div class="option-card" onclick="selectAccuracy('estimation')">
+            <div class="option-label">Estimation</div>
+            <div class="option-desc">Within ±20% acceptable</div>
+          </div>-->
+        </div>
+        <div class="nav-arrows">
+          <div class="nav-arrow" onclick="goBack('accuracy')">←</div>
+          <div class="nav-arrow disabled">→</div>
+        </div>
+      </div>
+    </div>
+    <div id="operation-screen" class="hidden">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <div class="section-title">Select Problem Type</div>
+        </div>
+        <div class="operation-pills">
+          <div class="pill-row">
+            <button class="op-pill" onclick="selectOperation('addition')">
+              <span class="op-symbol">+</span>
+              <span class="op-name">Addition</span>
+            </button>
+            <button class="op-pill" onclick="selectOperation('subtraction')">
+              <span class="op-symbol">−</span>
+              <span class="op-name">Subtraction</span>
+            </button>
+            <button class="op-pill" onclick="selectOperation('multiplication')">
+              <span class="op-symbol">×</span>
+              <span class="op-name">Multiplication</span>
+            </button>
+          </div>
+          <div class="pill-row">
+            <button class="op-pill" onclick="selectOperation('division')">
+              <span class="op-symbol">÷</span>
+              <span class="op-name">Division</span>
+            </button>
+            <button class="op-pill" onclick="selectOperation('percents')">
+              <span class="op-symbol">%</span>
+              <span class="op-name">Percents</span>
+            </button>
+            <button class="op-pill" onclick="selectOperation('random')">
+              <span class="op-symbol">?</span>
+              <span class="op-name">Random</span>
+            </button>
+          </div>
+        </div>
+        <div class="nav-arrows">
+          <div class="nav-arrow" onclick="goBack('operation')">←</div>
+          <div class="nav-arrow disabled">→</div>
+        </div>
+      </div>
+    </div>
+    <div id="difficulty-screen" class="hidden">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <div class="section-title">Pick Difficulty</div>
+        </div>
+        <div class="option-grid">
+          <div class="option-card" onclick="selectDifficulty('easy')">
+            <div class="option-label">Easy</div>
+            <div class="option-desc">1-2 digit numbers</div>
+          </div>
+          <div class="option-card" onclick="selectDifficulty('medium')">
+            <div class="option-label">Medium</div>
+            <div class="option-desc">2 digit numbers</div>
+          </div>
+          <div class="option-card" onclick="selectDifficulty('hard')">
+            <div class="option-label">Hard</div>
+            <div class="option-desc">2-3 digit numbers</div>
+          </div>
+        </div>
+        <div class="examples-display">
+          <span class="examples-label">Examples:</span>
+          <span class="examples-text" id="difficulty-examples">8 × 45, 72 + 9, 156 ÷ 12</span>
+        </div>
+        <div class="nav-arrows">
+          <div class="nav-arrow" onclick="goBack('difficulty')">←</div>
+          <div class="nav-arrow disabled">→</div>
+        </div>
+      </div>
+    </div>
+    <div id="duration-screen" class="hidden">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">5</div>
+          <div class="section-title">Test Duration</div>
+        </div>
+        <div class="option-grid">
+          <div class="option-card" onclick="selectDuration(30)"><div class="option-label">30 Seconds</div></div>
+          <div class="option-card" onclick="selectDuration(60)"><div class="option-label">1 Minute</div></div>
+          <div class="option-card" onclick="selectDuration(120)"><div class="option-label">2 Minutes</div></div>
+        </div>
+        <div class="nav-arrows">
+          <div class="nav-arrow" onclick="goBack('duration')">←</div>
+          <div class="nav-arrow disabled">→</div>
+        </div>
+      </div>
+    </div>
+    <div id="test-screen" class="hidden">
+      <div class="test-header">
+        <div class="stat-card" id="timer-card">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="timer">00:00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Correct</div>
+          <div class="stat-value" id="correct-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Incorrect</div>
+          <div class="stat-value" id="incorrect-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracy">100%</div>
+        </div>
+      </div>
+      <div class="question-container compact">
+        <div class="solve-layout">
+          <div class="solve-main">
+            <div class="question-text compact" id="question">Loading...</div>
+            <input type="text" class="answer-input compact" id="answer-input" placeholder="?" onkeypress="handleKeyPress(event)" autocomplete="off">
+            <div class="input-hint compact">Press Enter | Use k/m/b notation</div>
+            <div id="feedback"></div>
+            <div id="training-hints" class="training-hints hidden">
+              <div class="training-hints-header" onclick="toggleHints()">
+                <h3>Mental Math Trick</h3>
+                <span class="training-hints-toggle">▼</span>
+              </div>
+              <div class="training-hints-content">
+                <div class="hint-content" id="hint-content"></div>
+              </div>
+            </div>
+            <div class="button-row-inline">
+              <button class="btn-inline btn-primary" onclick="submitAnswer()">SUBMIT</button>
+              <button class="btn-inline btn-trick" id="trick-btn" onclick="showTrick()">TRICK</button>
+              <button class="btn-inline btn-answer" id="answer-btn" onclick="showAnswer()">ANSWER</button>
+              <button class="btn-inline" onclick="endTest()">END</button>
+            </div>
+          </div>
+          <div class="notes-section tall">
+            <h4>Scratch Pad</h4>
+            <textarea class="notes-textarea tall" placeholder="Type notes here..."></textarea>
+            <canvas class="notes-canvas tall" id="notes-canvas" width="220" height="200"></canvas>
+            <button class="notes-clear" onclick="clearNotes()">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="results-screen" class="hidden">
+      <div class="results-title">Test Complete!</div>
+      <div class="results-subtitle">Here's how you performed</div>
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="result-value" id="final-correct">0</div>
+          <div class="result-label">Correct</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value" id="final-incorrect">0</div>
+          <div class="result-label">Incorrect</div>
+        </div>
+        <div class="result-card">
+          <div class="result-value" id="final-accuracy">0%</div>
+          <div class="result-label">Accuracy</div>
+        </div>
+        <div class="result-card" id="time-result-card">
+          <div class="result-value" id="final-time">00:00</div>
+          <div class="result-label">Time</div>
+        </div>
+      </div>
+      <div class="start-btn-container">
+        <button class="btn btn-primary" onclick="resetTest()">TAKE ANOTHER TEST</button>
+      </div>
+    </div>
+  </div>
+  <div class="breakdown-overlay" id="breakdown-overlay" onclick="closeBreakdown(event)">
+    <div class="breakdown-modal" id="breakdown-modal" onclick="event.stopPropagation()">
+      <div class="breakdown-title" id="breakdown-title">Mental Math Trick</div>
+      <div class="breakdown-subtitle" id="breakdown-method-name"></div>
+      <div class="breakdown-original" id="breakdown-original">74 × 48</div>
+      <div class="method-tabs" id="method-tabs"></div>
+      <div class="breakdown-steps" id="breakdown-steps"></div>
+      <div class="breakdown-final" id="breakdown-final">
+        <div class="breakdown-final-label">Final Answer</div>
+        <div class="breakdown-final-value" id="breakdown-answer">3,552</div>
+      </div>
+      <button class="breakdown-close" onclick="closeBreakdown()">GOT IT</button>
+    </div>
+  </div>
+  <div class="footer-quote">"I'll make you feel inferior to my superior math skills"</div>
+  <div class="footer-credit">
+    <span>Erik Slote</span>
+    <a href="https://x.com/erik_slote" target="_blank" aria-label="X">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    </a>
+    <a href="https://www.linkedin.com/in/erikslote/" target="_blank" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    </a>
+  </div>
+  <script>
+    // Lava lamp background
+    const canvas = document.getElementById('lava-canvas');
+    const gl = canvas.getContext('webgl');
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Blob {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = (Math.random() - 0.5) * 1.5;
+        this.radius = 45 + Math.random() * 30; // Medium sized
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+    }
+    const blobs = [];
+    const numBlobs = 15;
+    for (let i = 0; i < numBlobs; i++) blobs.push(new Blob());
+
+    const vertexShaderSource = `attribute vec2 a_position; void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
+    const fragmentShaderSource = `
+      precision highp float;
+      uniform vec2 u_resolution;
+      uniform vec3 u_blobs[15];
+      void main() {
+        vec2 pos = gl_FragCoord.xy;
+        float sum = 0.0;
+        for (int i = 0; i < 15; i++) {
+          vec2 blobPos = u_blobs[i].xy;
+          float radius = u_blobs[i].z;
+          float dx = blobPos.x - pos.x;
+          float dy = blobPos.y - pos.y;
+          float dist = sqrt(dx * dx + dy * dy);
+          sum += (radius * radius) / (dist * dist);
+        }
+        if (sum > 1.0) {
+          float t = (pos.x + pos.y) / (u_resolution.x + u_resolution.y);
+          vec3 red = vec3(0.9, 0.1, 0.0);
+          vec3 orange = vec3(1.0, 0.5, 0.0);
+          vec3 yellow = vec3(1.0, 0.9, 0.2);
+          vec3 color;
+          if (t < 0.5) {
+            color = mix(red, orange, t * 2.0);
+          } else {
+            color = mix(orange, yellow, (t - 0.5) * 2.0);
+          }
+          gl_FragColor = vec4(color, 1.0);
+        } else {
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+      }
+    `;
+
+    function compileShader(source, type) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      return shader;
+    }
+
+    let program = null, resolutionLocation = null, blobsLocation = null;
+    if (gl) {
+      const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+      const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+      program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.useProgram(program);
+      const positions = new Float32Array([-1, 1, -1, -1, 1, 1, 1, -1]);
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+      const positionLocation = gl.getAttribLocation(program, 'a_position');
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+      resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+      blobsLocation = gl.getUniformLocation(program, 'u_blobs');
+    }
+
+    function animateLava() {
+      if (gl) {
+        blobs.forEach(blob => blob.update());
+        const blobData = [];
+        blobs.forEach(blob => blobData.push(blob.x, blob.y, blob.radius));
+        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+        gl.uniform3fv(blobsLocation, new Float32Array(blobData));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+      requestAnimationFrame(animateLava);
+    }
+    animateLava();
+
+    // Test state
+    let testState = {
+      mode: null, accuracy: null, operation: null, difficulty: null, duration: null,
+      correct: 0, incorrect: 0, currentAnswer: null, currentQuestion: null,
+      num1: null, num2: null, currentOp: null, startTime: null, timerInterval: null
+    };
+    
+    // Question history
+    let questionHistory = [];
+
+    function selectMode(mode) {
+      testState.mode = mode;
+      document.getElementById('mode-screen').classList.add('hidden');
+      if (mode === 'training') {
+        // Skip accuracy screen for training, default to precise
+        testState.accuracy = 'precise';
+        document.getElementById('operation-screen').classList.remove('hidden');
+      } else if (mode === 'consultant') {
+        // Skip accuracy, operation, difficulty for consultant - go straight to test
+        testState.accuracy = 'estimation';
+        testState.operation = 'random';
+        testState.difficulty = 'medium';
+        testState.duration = 60;
+        startTest();
+      } else {
+        document.getElementById('accuracy-screen').classList.remove('hidden');
+      }
+    }
+
+    function selectAccuracy(accuracy) {
+      testState.accuracy = accuracy;
+      document.getElementById('accuracy-screen').classList.add('hidden');
+      document.getElementById('operation-screen').classList.remove('hidden');
+    }
+
+    function selectOperation(operation) {
+      testState.operation = operation;
+      document.getElementById('operation-screen').classList.add('hidden');
+      document.getElementById('difficulty-screen').classList.remove('hidden');
+    }
+
+    function selectDifficulty(difficulty) {
+      testState.difficulty = difficulty;
+      document.getElementById('difficulty-screen').classList.add('hidden');
+      if (testState.mode === 'training') {
+        testState.duration = null;
+        startTest();
+      } else {
+        document.getElementById('duration-screen').classList.remove('hidden');
+      }
+    }
+
+    function selectDuration(duration) {
+      testState.duration = duration;
+      document.getElementById('duration-screen').classList.add('hidden');
+      startTest();
+    }
+
+    function startTest() {
+      ['mode-screen','accuracy-screen','operation-screen','difficulty-screen','duration-screen'].forEach(id => 
+        document.getElementById(id).classList.add('hidden'));
+      document.getElementById('test-screen').classList.remove('hidden');
+      testState.startTime = Date.now();
+      testState.correct = 0;
+      testState.incorrect = 0;
+      document.getElementById('correct-count').textContent = '0';
+      document.getElementById('incorrect-count').textContent = '0';
+      document.getElementById('accuracy').textContent = '100%';
+
+      if (testState.mode === 'training') {
+        document.getElementById('timer-card').style.display = 'none';
+        document.getElementById('training-hints').classList.remove('hidden');
+      } else if (testState.mode === 'consultant') {
+        document.getElementById('timer-card').style.display = 'block';
+        document.getElementById('training-hints').classList.remove('hidden');
+        const min = Math.floor(testState.duration / 60);
+        const sec = testState.duration % 60;
+        document.getElementById('timer').textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+        testState.timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - testState.startTime) / 1000);
+          const remaining = testState.duration - elapsed;
+          if (remaining <= 0) { endTest(); return; }
+          const m = Math.floor(remaining / 60);
+          const s = remaining % 60;
+          document.getElementById('timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }, 1000);
+      } else {
+        document.getElementById('timer-card').style.display = 'block';
+        document.getElementById('training-hints').classList.add('hidden');
+        const min = Math.floor(testState.duration / 60);
+        const sec = testState.duration % 60;
+        document.getElementById('timer').textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+        testState.timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - testState.startTime) / 1000);
+          const remaining = testState.duration - elapsed;
+          if (remaining <= 0) { endTest(); return; }
+          const m = Math.floor(remaining / 60);
+          const s = remaining % 60;
+          document.getElementById('timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }, 1000);
+      }
+      generateQuestion();
+      document.getElementById('answer-input').focus();
+    }
+
+    function generateQuestion() {
+      let num1, num2, answer, question;
+      let op = testState.operation === 'random' 
+        ? ['addition','subtraction','multiplication','division','percents'][Math.floor(Math.random() * 5)]
+        : testState.operation;
+      testState.currentOp = op;
+
+      // Helper to generate numbers based on difficulty
+      // Easy: 1-2 digit (1-99), Medium: 2 digit (10-99), Hard: 2-3 digit (10-999)
+      function getNum(difficulty) {
+        if (difficulty === 'easy') return Math.floor(Math.random() * 99) + 1; // 1-99
+        if (difficulty === 'medium') return Math.floor(Math.random() * 90) + 10; // 10-99
+        return Math.floor(Math.random() * 990) + 10; // 10-999
+      }
+
+      switch(op) {
+        case 'addition':
+          num1 = getNum(testState.difficulty);
+          num2 = getNum(testState.difficulty);
+          question = `${num1.toLocaleString()} + ${num2.toLocaleString()}`;
+          answer = num1 + num2;
+          break;
+          
+        case 'subtraction':
+          num1 = getNum(testState.difficulty);
+          num2 = getNum(testState.difficulty);
+          if (num2 > num1) [num1, num2] = [num2, num1]; // Ensure positive result
+          question = `${num1.toLocaleString()} - ${num2.toLocaleString()}`;
+          answer = num1 - num2;
+          break;
+          
+        case 'multiplication':
+          num1 = getNum(testState.difficulty);
+          num2 = getNum(testState.difficulty);
+          question = `${num1.toLocaleString()} x ${num2.toLocaleString()}`;
+          answer = num1 * num2;
+          break;
+          
+        case 'division':
+          num2 = getNum(testState.difficulty);
+          if (num2 === 0) num2 = 1;
+          answer = getNum(testState.difficulty);
+          if (answer === 0) answer = 1;
+          num1 = num2 * answer; // dividend
+          question = `${num1.toLocaleString()} / ${num2.toLocaleString()}`;
+          break;
+          
+        case 'percents':
+          num1 = getNum(testState.difficulty);
+          if (testState.difficulty === 'easy') {
+            num2 = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
+          } else if (testState.difficulty === 'medium') {
+            num2 = [5, 10, 15, 20, 25, 50, 75][Math.floor(Math.random() * 7)];
+          } else {
+            num2 = [5, 10, 15, 20, 25, 30, 40, 50, 60, 75][Math.floor(Math.random() * 10)];
+          }
+          question = `What is ${num2}% of ${num1.toLocaleString()}?`;
+          answer = Math.round((num1 * num2) / 100);
+          break;
+      }
+
+      testState.num1 = num1;
+      testState.num2 = num2;
+      testState.currentAnswer = answer;
+      testState.currentQuestion = question;
+      document.getElementById('question').textContent = question;
+      document.getElementById('feedback').innerHTML = '';
+      document.getElementById('answer-input').value = '';
+      
+      // Show trick button only for 2x2 digit multiplication (easy difficulty)
+      const is2x2Mult = op === 'multiplication' && testState.difficulty === 'easy' && 
+                        num1 >= 10 && num1 < 100 && num2 >= 10 && num2 < 100;
+      document.getElementById('trick-btn').style.display = is2x2Mult ? 'inline-block' : 'none';
+      document.getElementById('answer-btn').style.display = 'inline-block';
+      
+      // Generate training hints if in training or consultant mode
+      if (testState.mode === 'training' || testState.mode === 'consultant') {
+        document.getElementById('hint-content').innerHTML = generateHint(op, num1, num2);
+      }
+    }
+
+    // ============================================
+    // TRAINING HINTS - Show METHOD only, NOT the answer
+    // ============================================
+    function generateHint(op, num1, num2) {
+      switch(op) {
+        case 'addition': return generateAdditionHint(num1, num2);
+        case 'subtraction': return generateSubtractionHint(num1, num2);
+        case 'multiplication': return generateMultiplicationHint(num1, num2);
+        case 'division': return generateDivisionHint(num1, num2);
+        case 'percents': return generatePercentHint(num1, num2);
+        default: return '';
+      }
+    }
+
+    function generateAdditionHint(a, b) {
+      const bRounded = Math.round(b / 10) * 10;
+      const bDiff = b - bRounded;
+      
+      if (Math.abs(bDiff) > 0 && Math.abs(bDiff) <= 3) {
+        return `<strong>Round & Adjust:</strong>
+          <span class="step">Round <span class="hl">${b.toLocaleString()}</span> to <span class="hl">${bRounded.toLocaleString()}</span></span>
+          <span class="step">Add: ${a.toLocaleString()} + ${bRounded.toLocaleString()} = ?</span>
+          <span class="step">${bDiff > 0 ? 'Then add' : 'Then subtract'} ${Math.abs(bDiff)}</span>
+          <span class="try-it">Try it yourself!</span>`;
+      }
+      
+      const aH = Math.floor(a / 100) * 100;
+      const aT = Math.floor((a % 100) / 10) * 10;
+      const aO = a % 10;
+      
+      return `<strong>Left-to-Right:</strong>
+        <span class="step">Break apart: ${[aH, aT, aO].filter(x => x > 0).join(' + ')}</span>
+        <span class="step">Add each part to ${b.toLocaleString()} starting from left</span>
+        <span class="try-it">Try it yourself!</span>`;
+    }
+
+    function generateSubtractionHint(a, b) {
+      const bRounded = Math.round(b / 10) * 10;
+      const bDiff = b - bRounded;
+      
+      if (Math.abs(bDiff) > 0 && Math.abs(bDiff) <= 3) {
+        return `<strong>Round & Adjust:</strong>
+          <span class="step">Round <span class="hl">${b.toLocaleString()}</span> to <span class="hl">${bRounded.toLocaleString()}</span></span>
+          <span class="step">Subtract: ${a.toLocaleString()} - ${bRounded.toLocaleString()} = ?</span>
+          <span class="step">${bDiff > 0 ? 'Then subtract' : 'Then add back'} ${Math.abs(bDiff)}</span>
+          <span class="try-it">Try it yourself!</span>`;
+      }
+      
+      return `<strong>Add Up Method:</strong>
+        <span class="step">Start at <span class="hl">${b.toLocaleString()}</span></span>
+        <span class="step">Count up to <span class="hl">${a.toLocaleString()}</span></span>
+        <span class="step">The gap is your answer</span>
+        <span class="try-it">Try it yourself!</span>`;
+    }
+
+    function generateMultiplicationHint(a, b) {
+      const bTens = Math.floor(b / 10);
+      const bOnes = b % 10;
+      
+      return `<strong>Split the Multiplier:</strong>
+        <span class="step">${a} x ${bTens} (tens digit) = ? then add a 0</span>
+        <span class="step">${a} x ${bOnes} (ones digit) = ?</span>
+        <span class="step">Add the two results together</span>
+        <span class="try-it">Try it yourself!</span>`;
+    }
+
+    function generateDivisionHint(a, b) {
+      if (b === 5) {
+        return `<strong>Divide by 5 Trick:</strong>
+          <span class="step">Double the number: ${a.toLocaleString()} x 2 = ?</span>
+          <span class="step">Then divide by 10 (move decimal left)</span>
+          <span class="try-it">Try it yourself!</span>`;
+      }
+      
+      if (b % 10 === 0) {
+        return `<strong>Simplify First:</strong>
+          <span class="step">Both have zeros - remove them</span>
+          <span class="step">${a.toLocaleString()} / ${b} becomes ${(a/10).toLocaleString()} / ${b/10}</span>
+          <span class="try-it">Try it yourself!</span>`;
+      }
+      
+      return `<strong>Build Up Method:</strong>
+        <span class="step">${b} x 10 = <span class="hl">${(b * 10).toLocaleString()}</span></span>
+        <span class="step">${b} x 100 = <span class="hl">${(b * 100).toLocaleString()}</span></span>
+        <span class="step">Use these to find what x ${b} = ${a.toLocaleString()}</span>
+        <span class="try-it">Try it yourself!</span>`;
+    }
+
+    function generatePercentHint(base, percent) {
+      const tenP = base / 10;
+      const oneP = base / 100;
+      
+      if (percent === 50) return `<strong>50% = Half:</strong><span class="step">Divide ${base.toLocaleString()} by 2</span><span class="try-it">Try it yourself!</span>`;
+      if (percent === 25) return `<strong>25% = Quarter:</strong><span class="step">Divide ${base.toLocaleString()} by 4 (or halve twice)</span><span class="try-it">Try it yourself!</span>`;
+      if (percent === 10) return `<strong>10% = Move Decimal:</strong><span class="step">Move decimal one place left</span><span class="try-it">Try it yourself!</span>`;
+      
+      const tens = Math.floor(percent / 10);
+      const ones = percent % 10;
+      
+      return `<strong>Building Blocks:</strong>
+        <span class="step">10% = <span class="hl">${tenP.toLocaleString()}</span></span>
+        <span class="step">1% = <span class="hl">${oneP.toLocaleString()}</span></span>
+        <span class="step">${percent}% = (10% x ${tens}) + (1% x ${ones})</span>
+        <span class="try-it">Try it yourself!</span>`;
+    }
+
+    function handleKeyPress(e) { if (e.key === 'Enter') submitAnswer(); }
+
+    function submitAnswer() {
+      const input = document.getElementById('answer-input').value.trim();
+      if (!input) return;
+      let userAnswer = input.toLowerCase().replace(/,/g,'').replace(/k$/,'000').replace(/m$/,'000000').replace(/b$/,'000000000');
+      userAnswer = parseFloat(userAnswer);
+      if (isNaN(userAnswer)) { alert('Please enter a valid number'); return; }
+
+      let isCorrect;
+      if (testState.accuracy === 'precise') {
+        isCorrect = Math.abs(userAnswer - testState.currentAnswer) < 1;
+      } else if (testState.mode === 'consultant') {
+        // Consultant mode: 15% margin
+        isCorrect = Math.abs(userAnswer - testState.currentAnswer) <= testState.currentAnswer * 0.15;
+      } else {
+        // Regular estimation: 20% margin
+        isCorrect = Math.abs(userAnswer - testState.currentAnswer) <= testState.currentAnswer * 0.2;
+      }
+
+      // Add to history
+      questionHistory.push({
+        question: testState.currentQuestion,
+        userAnswer: userAnswer,
+        correctAnswer: testState.currentAnswer,
+        isCorrect: isCorrect,
+        operation: testState.currentOp,
+        difficulty: testState.difficulty
+      });
+
+      if (isCorrect) {
+        testState.correct++;
+        document.getElementById('feedback').className = 'feedback correct';
+        document.getElementById('feedback').textContent = 'Correct!';
+        setTimeout(() => { generateQuestion(); document.getElementById('answer-input').focus(); }, 100);
+      } else {
+        testState.incorrect++;
+        document.getElementById('feedback').className = 'feedback incorrect';
+        document.getElementById('feedback').textContent = `Wrong - Answer: ${testState.currentAnswer.toLocaleString()}`;
+        setTimeout(() => { generateQuestion(); document.getElementById('answer-input').focus(); }, 1500);
+      }
+      document.getElementById('correct-count').textContent = testState.correct;
+      document.getElementById('incorrect-count').textContent = testState.incorrect;
+      const total = testState.correct + testState.incorrect;
+      document.getElementById('accuracy').textContent = (total > 0 ? Math.round((testState.correct / total) * 100) : 100) + '%';
+    }
+
+    function endTest() {
+      if (testState.timerInterval) { clearInterval(testState.timerInterval); testState.timerInterval = null; }
+      const total = testState.correct + testState.incorrect;
+      const acc = total > 0 ? Math.round((testState.correct / total) * 100) : 0;
+      const elapsed = Math.floor((Date.now() - testState.startTime) / 1000);
+      document.getElementById('test-screen').classList.add('hidden');
+      document.getElementById('results-screen').classList.remove('hidden');
+      document.getElementById('final-correct').textContent = testState.correct;
+      document.getElementById('final-incorrect').textContent = testState.incorrect;
+      document.getElementById('final-accuracy').textContent = acc + '%';
+      document.getElementById('final-time').textContent = `${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(elapsed%60).padStart(2,'0')}`;
+      document.getElementById('time-result-card').style.display = testState.mode === 'training' ? 'none' : 'block';
+    }
+
+    function resetTest() {
+      if (testState.timerInterval) clearInterval(testState.timerInterval);
+      testState = { mode: null, accuracy: null, operation: null, difficulty: null, duration: null, correct: 0, incorrect: 0, currentAnswer: null, currentQuestion: null, num1: null, num2: null, currentOp: null, startTime: null, timerInterval: null };
+      ['results-screen','test-screen','accuracy-screen','operation-screen','difficulty-screen','duration-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('mode-screen').classList.remove('hidden');
+      document.getElementById('training-hints').classList.add('hidden');
+      document.getElementById('time-result-card').style.display = 'block';
+    }
+
+    // ============================================
+    // SHOW TRICK - Mental math method without answer
+    // ============================================
+    function showTrick() {
+      const overlay = document.getElementById('breakdown-overlay');
+      const modal = document.getElementById('breakdown-modal');
+      modal.classList.add('trick-modal');
+      overlay.classList.add('visible');
+      
+      const { num1, num2, currentOp: op, currentQuestion } = testState;
+      document.getElementById('breakdown-title').textContent = 'Mental Math Trick';
+      document.getElementById('breakdown-title').classList.remove('answer-title');
+      document.getElementById('breakdown-original').textContent = currentQuestion;
+      document.getElementById('breakdown-final').style.display = 'none';
+      document.getElementById('method-tabs').innerHTML = '';
+      
+      const steps = getTrickSteps(op, num1, num2);
+      document.getElementById('breakdown-method-name').textContent = steps.description;
+      document.getElementById('breakdown-steps').innerHTML = steps.steps.map((step, i) => `
+        <div class="breakdown-step" style="animation-delay: ${i * 0.15}s">
+          <div class="step-number">${i + 1}</div>
+          <div class="step-content">
+            <div class="step-description">${step.desc}</div>
+            <div class="step-math">${step.math}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getTrickSteps(op, a, b) {
+      switch(op) {
+        case 'multiplication': return getMultiplicationTrick(a, b);
+        case 'division': return getDivisionTrick(a, b);
+        case 'addition': return getAdditionTrick(a, b);
+        case 'subtraction': return getSubtractionTrick(a, b);
+        case 'percents': return getPercentTrick(a, b);
+        default: return { description: '', steps: [] };
+      }
+    }
+
+    function getMultiplicationTrick(a, b) {
+      // Round and adjust method - works for all 2-digit multiplications
+      const aRounded = Math.round(a / 10) * 10;
+      const aDiff = a - aRounded;
+      const bRounded = Math.round(b / 10) * 10;
+      const bDiff = b - bRounded;
+      
+      // Use the easier number to round
+      if (Math.abs(aDiff) <= Math.abs(bDiff) && aDiff !== 0) {
+        // Round first number
+        const baseCalc = aRounded * b;
+        return {
+          description: `Round ${a} to ${aRounded}, then adjust`,
+          steps: [
+            { desc: `Round ${a} → ${aRounded}`, math: `(easier to multiply)` },
+            { desc: `${aRounded} × ${b}`, math: `= <span class="highlight">${baseCalc.toLocaleString()}</span>` },
+            { desc: `Adjust: ${aDiff > 0 ? 'add' : 'subtract'} ${Math.abs(aDiff)} × ${b}`, math: `= <span class="highlight">${Math.abs(aDiff * b).toLocaleString()}</span>` },
+            { desc: `${baseCalc.toLocaleString()} ${aDiff > 0 ? '+' : '−'} ${Math.abs(aDiff * b).toLocaleString()}`, math: `= <span class="highlight">?</span>` }
+          ]
+        };
+      } else if (bDiff !== 0) {
+        // Round second number
+        const baseCalc = a * bRounded;
+        return {
+          description: `Round ${b} to ${bRounded}, then adjust`,
+          steps: [
+            { desc: `Round ${b} → ${bRounded}`, math: `(easier to multiply)` },
+            { desc: `${a} × ${bRounded}`, math: `= <span class="highlight">${baseCalc.toLocaleString()}</span>` },
+            { desc: `Adjust: ${bDiff > 0 ? 'add' : 'subtract'} ${a} × ${Math.abs(bDiff)}`, math: `= <span class="highlight">${Math.abs(a * bDiff).toLocaleString()}</span>` },
+            { desc: `${baseCalc.toLocaleString()} ${bDiff > 0 ? '+' : '−'} ${Math.abs(a * bDiff).toLocaleString()}`, math: `= <span class="highlight">?</span>` }
+          ]
+        };
+      } else {
+        // Both are round numbers already - just multiply
+        return {
+          description: `Both numbers are round - straightforward!`,
+          steps: [
+            { desc: `${a} × ${b}`, math: `= <span class="highlight">${(a * b).toLocaleString()}</span>` }
+          ]
+        };
+      }
+    }
+
+    function getDivisionTrick(a, b) {
+      if (b === 5) {
+        return {
+          description: 'Divide by 5: Double then divide by 10',
+          steps: [
+            { desc: `Double the number`, math: `${a.toLocaleString()} x 2 = <span class="highlight">${(a * 2).toLocaleString()}</span>` },
+            { desc: `Divide by 10`, math: `${(a * 2).toLocaleString()} / 10 = <span class="highlight">?</span>` }
+          ]
+        };
+      }
+      
+      return {
+        description: `Build up multiples of ${b}`,
+        steps: [
+          { desc: `${b} x 10`, math: `= <span class="highlight">${(b * 10).toLocaleString()}</span>` },
+          { desc: `${b} x 100`, math: `= <span class="highlight">${(b * 100).toLocaleString()}</span>` },
+          { desc: `Find what times ${b} equals ${a.toLocaleString()}`, math: `${b} x <span class="highlight">?</span> = ${a.toLocaleString()}` }
+        ]
+      };
+    }
+
+    function getAdditionTrick(a, b) {
+      const bRounded = Math.round(b / 10) * 10;
+      const bDiff = b - bRounded;
+      
+      if (Math.abs(bDiff) <= 3 && bDiff !== 0) {
+        return {
+          description: `Round ${b} to ${bRounded}, then adjust`,
+          steps: [
+            { desc: `Round to nearest ten`, math: `${b} -> <span class="highlight">${bRounded}</span>` },
+            { desc: `Add rounded number`, math: `${a.toLocaleString()} + ${bRounded} = <span class="highlight">?</span>` },
+            { desc: bDiff > 0 ? `Add ${bDiff}` : `Subtract ${Math.abs(bDiff)}`, math: `? ${bDiff > 0 ? '+' : '-'} ${Math.abs(bDiff)} = <span class="highlight">?</span>` }
+          ]
+        };
+      }
+      
+      return {
+        description: 'Add left-to-right',
+        steps: [
+          { desc: `Add hundreds first`, math: `Then tens, then ones` },
+          { desc: `Keep a running total`, math: `<span class="highlight">?</span>` }
+        ]
+      };
+    }
+
+    function getSubtractionTrick(a, b) {
+      const bRounded = Math.round(b / 10) * 10;
+      const bDiff = b - bRounded;
+      
+      if (Math.abs(bDiff) <= 3 && bDiff !== 0) {
+        return {
+          description: `Round ${b} to ${bRounded}, then adjust`,
+          steps: [
+            { desc: `Round to nearest ten`, math: `${b} -> <span class="highlight">${bRounded}</span>` },
+            { desc: `Subtract rounded number`, math: `${a.toLocaleString()} - ${bRounded} = <span class="highlight">?</span>` },
+            { desc: bDiff > 0 ? `Subtract ${bDiff} more` : `Add back ${Math.abs(bDiff)}`, math: `? ${bDiff > 0 ? '-' : '+'} ${Math.abs(bDiff)} = <span class="highlight">?</span>` }
+          ]
+        };
+      }
+      
+      return {
+        description: 'Count up from smaller to larger',
+        steps: [
+          { desc: `Start at ${b.toLocaleString()}`, math: `Count up to <span class="highlight">${a.toLocaleString()}</span>` },
+          { desc: `The gap is your answer`, math: `<span class="highlight">?</span>` }
+        ]
+      };
+    }
+
+    function getPercentTrick(base, percent) {
+      const tenP = base / 10;
+      const oneP = base / 100;
+      
+      if (percent === 50) {
+        return { description: '50% = Half', steps: [{ desc: `Divide by 2`, math: `${base.toLocaleString()} / 2 = <span class="highlight">?</span>` }] };
+      }
+      if (percent === 25) {
+        return { description: '25% = Quarter', steps: [{ desc: `Divide by 4`, math: `${base.toLocaleString()} / 4 = <span class="highlight">?</span>` }] };
+      }
+      if (percent === 10) {
+        return { description: '10% = Move decimal left', steps: [{ desc: `Divide by 10`, math: `${base.toLocaleString()} -> <span class="highlight">?</span>` }] };
+      }
+      
+      const tens = Math.floor(percent / 10);
+      const ones = percent % 10;
+      
+      return {
+        description: 'Use 10% and 1% building blocks',
+        steps: [
+          { desc: `10% of ${base.toLocaleString()}`, math: `= <span class="highlight">${tenP.toLocaleString()}</span>` },
+          { desc: `1% of ${base.toLocaleString()}`, math: `= <span class="highlight">${oneP.toLocaleString()}</span>` },
+          { desc: `${percent}% = (10% x ${tens}) + (1% x ${ones})`, math: `= <span class="highlight">?</span>` }
+        ]
+      };
+    }
+
+    // ============================================
+    // SHOW ANSWER - Full solution with answer
+    // ============================================
+    function showAnswer() {
+      const overlay = document.getElementById('breakdown-overlay');
+      const modal = document.getElementById('breakdown-modal');
+      modal.classList.remove('trick-modal');
+      overlay.classList.add('visible');
+      
+      const { num1, num2, currentAnswer: answer, currentOp: op, currentQuestion } = testState;
+      document.getElementById('breakdown-title').textContent = 'Solution';
+      document.getElementById('breakdown-title').classList.add('answer-title');
+      document.getElementById('breakdown-original').textContent = currentQuestion;
+      document.getElementById('breakdown-final').style.display = 'block';
+      document.getElementById('breakdown-answer').textContent = answer.toLocaleString();
+      document.getElementById('method-tabs').innerHTML = '';
+      
+      const steps = getAnswerSteps(op, num1, num2, answer);
+      document.getElementById('breakdown-method-name').textContent = steps.description;
+      document.getElementById('breakdown-steps').innerHTML = steps.steps.map((step, i) => `
+        <div class="breakdown-step" style="animation-delay: ${i * 0.15}s">
+          <div class="step-number">${i + 1}</div>
+          <div class="step-content">
+            <div class="step-description">${step.desc}</div>
+            <div class="step-math">${step.math}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getAnswerSteps(op, a, b, answer) {
+      switch(op) {
+        case 'multiplication': return getMultiplicationAnswer(a, b, answer);
+        case 'division': return getDivisionAnswer(a, b, answer);
+        case 'addition': return getAdditionAnswer(a, b, answer);
+        case 'subtraction': return getSubtractionAnswer(a, b, answer);
+        case 'percents': return getPercentAnswer(a, b, answer);
+        default: return { description: '', steps: [] };
+      }
+    }
+
+    function getMultiplicationAnswer(a, b, answer) {
+      const bTens = Math.floor(b / 10);
+      const bOnes = b % 10;
+      const step1 = a * bTens;
+      const step1Shifted = step1 * 10;
+      const step2 = a * bOnes;
+      
+      return {
+        description: `${a} x ${b} step by step`,
+        steps: [
+          { desc: `${a} x ${bTens} (tens)`, math: `= <span class="highlight">${step1.toLocaleString()}</span>` },
+          { desc: `Shift left (x10)`, math: `${step1.toLocaleString()} -> <span class="highlight">${step1Shifted.toLocaleString()}</span>` },
+          { desc: `${a} x ${bOnes} (ones)`, math: `= <span class="highlight">${step2.toLocaleString()}</span>` },
+          { desc: `Add together`, math: `${step1Shifted.toLocaleString()} + ${step2.toLocaleString()} = <span class="result">${answer.toLocaleString()}</span>` }
+        ]
+      };
+    }
+
+    function getDivisionAnswer(a, b, answer) {
+      return {
+        description: `${a.toLocaleString()} / ${b}`,
+        steps: [
+          { desc: `Find what times ${b} equals ${a.toLocaleString()}`, math: `${b} x <span class="highlight">${answer.toLocaleString()}</span> = ${a.toLocaleString()}` },
+          { desc: `Answer`, math: `<span class="result">${answer.toLocaleString()}</span>` }
+        ]
+      };
+    }
+
+    function getAdditionAnswer(a, b, answer) {
+      return {
+        description: `${a.toLocaleString()} + ${b.toLocaleString()}`,
+        steps: [
+          { desc: `Sum`, math: `<span class="result">${answer.toLocaleString()}</span>` }
+        ]
+      };
+    }
+
+    function getSubtractionAnswer(a, b, answer) {
+      return {
+        description: `${a.toLocaleString()} - ${b.toLocaleString()}`,
+        steps: [
+          { desc: `Difference`, math: `<span class="result">${answer.toLocaleString()}</span>` }
+        ]
+      };
+    }
+
+    function getPercentAnswer(base, percent, answer) {
+      const tenP = base / 10;
+      const tens = Math.floor(percent / 10);
+      const ones = percent % 10;
+      
+      return {
+        description: `${percent}% of ${base.toLocaleString()}`,
+        steps: [
+          { desc: `10% = ${tenP.toLocaleString()}`, math: `10% x ${tens} = <span class="highlight">${(tenP * tens).toLocaleString()}</span>` },
+          { desc: `1% = ${(base/100).toLocaleString()}`, math: `1% x ${ones} = <span class="highlight">${((base/100) * ones).toLocaleString()}</span>` },
+          { desc: `Total`, math: `<span class="result">${answer.toLocaleString()}</span>` }
+        ]
+      };
+    }
+
+    function closeBreakdown(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('breakdown-overlay').classList.remove('visible');
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBreakdown(); });
+
+    // ============================================
+    // VOICE MODE
+    // ============================================
+    let voiceModeEnabled = false;
+    let voiceModeType = 'brainstorm'; // 'brainstorm' or 'answer'
+    let recognition = null;
+    let isListening = false;
+    let transcript = '';
+
+    // Check for speech recognition support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const speechSupported = !!SpeechRecognition;
+
+    function toggleVoiceMode() {
+      if (!speechSupported) {
+        alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+        return;
+      }
+      
+      voiceModeEnabled = !voiceModeEnabled;
+      const toggle = document.getElementById('voice-toggle');
+      const panel = document.getElementById('voice-panel');
+      
+      if (voiceModeEnabled) {
+        toggle.classList.add('active');
+        panel.classList.add('visible');
+      } else {
+        toggle.classList.remove('active');
+        panel.classList.remove('visible');
+        if (isListening) stopListening();
+      }
+    }
+
+    function selectVoiceMode(mode) {
+      voiceModeType = mode;
+      document.querySelectorAll('.voice-mode-option').forEach(opt => opt.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      clearTranscript();
+    }
+
+    function toggleListening() {
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    }
+
+    function startListening() {
+      if (!speechSupported) return;
+      
+      // Explicitly request microphone permission first
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          // Permission granted, stop the stream (we just needed permission)
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Now start speech recognition
+          recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+
+          recognition.onstart = () => {
+            isListening = true;
+            document.getElementById('voice-status-dot').classList.add('listening');
+            document.getElementById('voice-status-text').textContent = 'Listening...';
+            document.getElementById('voice-listen-btn').textContent = 'Stop Listening';
+            document.getElementById('voice-listen-btn').classList.add('recording');
+          };
+
+          recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+              } else {
+                interimTranscript += transcript;
+              }
+            }
+
+            if (finalTranscript) {
+              processVoiceInput(finalTranscript);
+            }
+          };
+
+          recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            if (event.error === 'not-allowed') {
+              alert('Microphone access denied. Please allow microphone access in your browser settings.');
+            }
+            stopListening();
+          };
+
+          recognition.onend = () => {
+            if (isListening) {
+              // Restart if still supposed to be listening
+              recognition.start();
+            }
+          };
+
+          recognition.start();
+        })
+        .catch(err => {
+          console.error('Microphone permission denied:', err);
+          alert('Microphone access is required for voice mode. Please allow microphone access and try again.');
+        });
+    }
+
+    function stopListening() {
+      isListening = false;
+      if (recognition) {
+        recognition.stop();
+        recognition = null;
+      }
+      document.getElementById('voice-status-dot').classList.remove('listening');
+      document.getElementById('voice-status-text').textContent = 'Not listening';
+      document.getElementById('voice-listen-btn').textContent = 'Start Listening';
+      document.getElementById('voice-listen-btn').classList.remove('recording');
+    }
+
+    function processVoiceInput(text) {
+      const transcriptEl = document.getElementById('voice-transcript');
+      
+      if (voiceModeType === 'brainstorm') {
+        // Extract numbers and math-related words
+        const processed = highlightMathContent(text);
+        transcript += processed + ' ';
+        transcriptEl.innerHTML = transcript;
+        transcriptEl.scrollTop = transcriptEl.scrollHeight;
+      } else {
+        // Answer only mode - try to extract a number and submit
+        const number = extractNumber(text);
+        if (number !== null) {
+          document.getElementById('answer-input').value = number;
+          transcriptEl.innerHTML = `<span class="number">${number}</span> (detected)`;
+          // Auto-submit after a brief delay
+          setTimeout(() => {
+            if (document.getElementById('answer-input').value == number) {
+              submitAnswer();
+            }
+          }, 1000);
+        }
+      }
+    }
+
+    function highlightMathContent(text) {
+      // Convert spoken numbers to digits
+      const numberWords = {
+        'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+        'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+        'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13',
+        'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17',
+        'eighteen': '18', 'nineteen': '19', 'twenty': '20', 'thirty': '30',
+        'forty': '40', 'fifty': '50', 'sixty': '60', 'seventy': '70',
+        'eighty': '80', 'ninety': '90', 'hundred': '00', 'thousand': '000'
+      };
+      
+      let processed = text.toLowerCase();
+      
+      // Highlight operators
+      processed = processed.replace(/\b(plus|add|and)\b/gi, '<span class="operator">+</span>');
+      processed = processed.replace(/\b(minus|subtract|take away)\b/gi, '<span class="operator">−</span>');
+      processed = processed.replace(/\b(times|multiply|multiplied by)\b/gi, '<span class="operator">×</span>');
+      processed = processed.replace(/\b(divided by|divide|over)\b/gi, '<span class="operator">÷</span>');
+      processed = processed.replace(/\b(equals|equal|is)\b/gi, '<span class="operator">=</span>');
+      
+      // Highlight numbers
+      processed = processed.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+      
+      // Highlight number words
+      Object.keys(numberWords).forEach(word => {
+        const regex = new RegExp('\\b' + word + '\\b', 'gi');
+        processed = processed.replace(regex, `<span class="number">${word}</span>`);
+      });
+      
+      return processed;
+    }
+
+    function extractNumber(text) {
+      // Try to find a number in the text
+      const numberWords = {
+        'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4,
+        'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9,
+        'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13,
+        'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'seventeen': 17,
+        'eighteen': 18, 'nineteen': 19, 'twenty': 20, 'thirty': 30,
+        'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70,
+        'eighty': 80, 'ninety': 90
+      };
+      
+      // First try to find a digit number
+      const digitMatch = text.match(/\d+/);
+      if (digitMatch) {
+        return parseInt(digitMatch[0]);
+      }
+      
+      // Try to parse spoken numbers
+      let result = 0;
+      let current = 0;
+      const words = text.toLowerCase().split(/\s+/);
+      
+      for (const word of words) {
+        if (numberWords[word] !== undefined) {
+          const val = numberWords[word];
+          if (val >= 100) {
+            current = current === 0 ? val : current * val;
+          } else {
+            current += val;
+          }
+        } else if (word === 'hundred') {
+          current *= 100;
+        } else if (word === 'thousand') {
+          current *= 1000;
+          result += current;
+          current = 0;
+        }
+      }
+      
+      result += current;
+      return result > 0 ? result : null;
+    }
+
+    function clearTranscript() {
+      transcript = '';
+      document.getElementById('voice-transcript').innerHTML = '<em style="opacity: 0.5">Your spoken calculations will appear here...</em>';
+    }
+
+    function toggleHints() {
+      const hints = document.getElementById('training-hints');
+      hints.classList.toggle('open');
+    }
+
+    // History functions
+    function showHistory() {
+      const overlay = document.getElementById('history-overlay');
+      const content = document.getElementById('history-content');
+      
+      if (questionHistory.length === 0) {
+        content.innerHTML = '<div class="history-empty">No questions answered yet</div>';
+      } else {
+        let html = `<table class="history-table">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Your Answer</th>
+              <th>Correct</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>`;
+        
+        questionHistory.slice().reverse().forEach(item => {
+          const resultClass = item.isCorrect ? 'history-correct' : 'history-incorrect';
+          const resultText = item.isCorrect ? '✓' : '✗';
+          html += `<tr>
+            <td>${item.question}</td>
+            <td>${item.userAnswer.toLocaleString()}</td>
+            <td>${item.correctAnswer.toLocaleString()}</td>
+            <td class="${resultClass}">${resultText}</td>
+          </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        content.innerHTML = html;
+      }
+      
+      overlay.classList.add('visible');
+    }
+
+    function closeHistory(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('history-overlay').classList.remove('visible');
+    }
+
+    // Update difficulty examples on hover
+    const difficultyExamples = {
+      easy: '8 × 45, 72 + 9, 99 ÷ 3',
+      medium: '34 × 67, 85 - 42, 720 ÷ 18',
+      hard: '156 × 78, 543 + 287, 4752 ÷ 54'
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const difficultyCards = document.querySelectorAll('#difficulty-screen .option-card');
+      difficultyCards.forEach((card, index) => {
+        const difficulty = ['easy', 'medium', 'hard'][index];
+        card.addEventListener('mouseenter', () => {
+          document.getElementById('difficulty-examples').textContent = difficultyExamples[difficulty];
+        });
+      });
+    });
+
+    // Navigation functions
+    const screens = ['mode', 'accuracy', 'operation', 'difficulty', 'duration'];
+    
+    function getCurrentScreen() {
+      for (const screen of screens) {
+        const el = document.getElementById(screen + '-screen');
+        if (el && !el.classList.contains('hidden')) return screen;
+      }
+      return null;
+    }
+
+    function goBack(fromScreen) {
+      const idx = screens.indexOf(fromScreen);
+      if (idx > 0) {
+        document.getElementById(fromScreen + '-screen').classList.add('hidden');
+        
+        // Skip accuracy screen when going back in training mode
+        if (fromScreen === 'operation' && testState.mode === 'training') {
+          document.getElementById('mode-screen').classList.remove('hidden');
+          testState.accuracy = null;
+          testState.mode = null;
+        } else {
+          document.getElementById(screens[idx - 1] + '-screen').classList.remove('hidden');
+          // Reset the state for the screen we're leaving
+          if (fromScreen === 'accuracy') testState.mode = null;
+          if (fromScreen === 'operation') testState.accuracy = null;
+          if (fromScreen === 'difficulty') testState.operation = null;
+          if (fromScreen === 'duration') testState.difficulty = null;
+        }
+      }
+    }
+
+    // Arrow key navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        const current = getCurrentScreen();
+        if (current && current !== 'mode') goBack(current);
+      }
+    });
+
+    // Notes canvas drawing
+    let isDrawing = false;
+    let notesCtx = null;
+
+    function initNotesCanvas() {
+      const notesCanvas = document.getElementById('notes-canvas');
+      if (notesCanvas) {
+        notesCtx = notesCanvas.getContext('2d');
+        notesCtx.strokeStyle = '#fff';
+        notesCtx.lineWidth = 2;
+        notesCtx.lineCap = 'round';
+
+        notesCanvas.addEventListener('mousedown', (e) => {
+          isDrawing = true;
+          notesCtx.beginPath();
+          notesCtx.moveTo(e.offsetX, e.offsetY);
+        });
+
+        notesCanvas.addEventListener('mousemove', (e) => {
+          if (isDrawing) {
+            notesCtx.lineTo(e.offsetX, e.offsetY);
+            notesCtx.stroke();
+          }
+        });
+
+        notesCanvas.addEventListener('mouseup', () => isDrawing = false);
+        notesCanvas.addEventListener('mouseout', () => isDrawing = false);
+      }
+    }
+
+    function clearNotes() {
+      const notesCanvas = document.getElementById('notes-canvas');
+      const textarea = document.querySelector('.notes-textarea');
+      if (notesCtx && notesCanvas) {
+        notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+      }
+      if (textarea) textarea.value = '';
+    }
+
+    // Initialize notes canvas when test starts
+    const originalStartTest = startTest;
+    startTest = function() {
+      originalStartTest();
+      setTimeout(initNotesCanvas, 100);
+    };
+  </script>
+</body>
+</html>
+
