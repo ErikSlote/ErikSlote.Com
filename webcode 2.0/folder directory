@@ -1,0 +1,7 @@
+your-website/
+   ├── index.html (your main site)
+   ├── mathify/          ← create this folder
+   │   └── index.html    ← paste the Mathify code here
+
+
+   
